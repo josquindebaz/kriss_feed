@@ -18,7 +18,8 @@ on your server. Enjoy !
 
 * If you want to look at the source, look at the src directory.
 To generate index.php file, just run the command :
-bash generateIndex > index.php
+~~bash generateIndex > index.php~~ 
+php make.php > index.php
 
 More information here: [KrISS feed](http://tontof.net/kriss/feed).
 
