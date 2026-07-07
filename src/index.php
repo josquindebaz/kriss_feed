@@ -2869,6 +2869,17 @@ class FeedPage
                   <dd><?php echo Intl::msg( 'Go to Help page (this page)' );?></dd>
                 </dl>
               </fieldset>
+              <fieldset>
+                <legend><?php echo Intl::msg( 'Folder navigation' );?></legend>
+                <dl class="dl-horizontal">
+                  <dt>&#x21e7; + &#x2192;, &#x21e7; + j</dt>
+                  <dd><?php echo Intl::msg( 'Go to next folder' );?></dd>
+                </dl>
+                <dl class="dl-horizontal">
+                  <dt>&#x21e7; + &#x2190;, &#x21e7; + k</dt>
+                  <dd><?php echo Intl::msg( 'Go to previous folder' );?></dd>
+                </dl>
+              </fieldset>
               <h2><?php echo Intl::msg( 'Configuration check' );?></h2>
               <fieldset>
                 <legend><?php echo Intl::msg( 'PHP configuration' );?></legend>
@@ -6831,6 +6842,43 @@ dd {
     }
   }
 
+  function selectRelativeFolder(direction) {
+    var i, listElements, folders, realFolders = [], currentIndex = -1, nextIndex, titleLinks;
+
+    listElements = document.getElementById('list-feeds');
+    if (!listElements) {
+      return;
+    }
+
+    folders = listElements.getElementsByClassName('folder');
+
+    for (i = 0; i < folders.length; i += 1) {
+      if (folders[i].id !== 'all-subscriptions') {
+        realFolders.push(folders[i]);
+      }
+    }
+
+    if (realFolders.length === 0) {
+      return;
+    }
+
+    for (i = 0; i < realFolders.length; i += 1) {
+      if (hasClass(realFolders[i], 'current-folder')) {
+        currentIndex = i;
+        break;
+      }
+    }
+
+    if (currentIndex === -1) {
+      nextIndex = direction > 0 ? 0 : realFolders.length - 1;
+    } else {
+      nextIndex = (currentIndex + direction + realFolders.length) % realFolders.length;
+    }
+
+    titleLinks = realFolders[nextIndex].getElementsByTagName('h5')[0].getElementsByTagName('a');
+    window.location.href = titleLinks[titleLinks.length - 1].href;
+  }
+
   function getListLinkFolders() {
     var i = 0,
         listFolders = [],
@@ -7870,12 +7918,20 @@ dd {
         window.location.href = document.getElementById('nav-home').href;
         break;
         case 74: // 'J'
-        nextItem();
-        toggleCurrentItem();
+        if (e.shiftKey) {
+          selectRelativeFolder(1);
+        } else {
+          nextItem();
+          toggleCurrentItem();
+        }
         break;
         case 75: // 'K'
-        previousItem();
-        toggleCurrentItem();
+        if (e.shiftKey) {
+          selectRelativeFolder(-1);
+        } else {
+          previousItem();
+          toggleCurrentItem();
+        }
         break;
         case 77: // 'M'
         if (e.shiftKey) {
@@ -7886,6 +7942,12 @@ dd {
         }
         break;
         case 39: // right arrow
+        if (e.shiftKey) {
+          selectRelativeFolder(1);
+        } else {
+          nextItem();
+        }
+        break;
         case 78: // 'N'
         if (e.shiftKey) {
           nextPage();
@@ -7901,6 +7963,12 @@ dd {
         }
         break;
         case 37: // left arrow
+        if (e.shiftKey) {
+          selectRelativeFolder(-1);
+        } else {
+          previousItem();
+        }
+        break;
         case 80 : // 'P'
         if (e.shiftKey) {
           previousPage();
