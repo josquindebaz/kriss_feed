@@ -2873,11 +2873,11 @@ class FeedPage
                 <legend><?php echo Intl::msg( 'Folder navigation' );?></legend>
                 <dl class="dl-horizontal">
                   <dt>&#x21e7; + &#x2192;, &#x21e7; + j</dt>
-                  <dd><?php echo Intl::msg( 'Go to next folder' );?></dd>
+                  <dd><?php echo Intl::msg( 'Go to next folder with unread posts' );?></dd>
                 </dl>
                 <dl class="dl-horizontal">
                   <dt>&#x21e7; + &#x2190;, &#x21e7; + k</dt>
-                  <dd><?php echo Intl::msg( 'Go to previous folder' );?></dd>
+                  <dd><?php echo Intl::msg( 'Go to previous folder with unread posts' );?></dd>
                 </dl>
               </fieldset>
               <h2><?php echo Intl::msg( 'Configuration check' );?></h2>
@@ -6842,8 +6842,18 @@ dd {
     }
   }
 
+  function getFolderNbUnread(folderElt) {
+    var labels = folderElt.getElementsByTagName('h5')[0].getElementsByClassName('label');
+
+    if (labels.length === 0) {
+      return 0;
+    }
+
+    return parseInt(labels[0].textContent || labels[0].innerText, 10) || 0;
+  }
+
   function selectRelativeFolder(direction) {
-    var i, listElements, folders, realFolders = [], currentIndex = -1, nextIndex, titleLinks;
+    var i, listElements, folders, realFolders = [], currentIndex = -1, nextIndex, titleLinks, checked;
 
     listElements = document.getElementById('list-feeds');
     if (!listElements) {
@@ -6869,10 +6879,23 @@ dd {
       }
     }
 
-    if (currentIndex === -1) {
-      nextIndex = direction > 0 ? 0 : realFolders.length - 1;
-    } else {
-      nextIndex = (currentIndex + direction + realFolders.length) % realFolders.length;
+    nextIndex = -1;
+
+    for (checked = 1; checked <= realFolders.length; checked += 1) {
+      if (currentIndex === -1) {
+        i = direction > 0 ? checked - 1 : realFolders.length - checked;
+      } else {
+        i = (currentIndex + direction * checked + realFolders.length * checked) % realFolders.length;
+      }
+
+      if (getFolderNbUnread(realFolders[i]) > 0) {
+        nextIndex = i;
+        break;
+      }
+    }
+
+    if (nextIndex === -1) {
+      return;
     }
 
     titleLinks = realFolders[nextIndex].getElementsByTagName('h5')[0].getElementsByTagName('a');
